@@ -40,8 +40,8 @@ to \code{azimuth}; 0 for a grid aligned with true north. In polar stereographic
 (EPSG:3031, EPSG:3413 style) it is the longitude, or minus it in the north}
 }
 \value{
-matrix like \code{z} of hours of direct sun, with attributes \code{daylight} (hours the
-sun is above a flat horizon) and \code{extent}
+matrix like \code{z} of hours of direct sun (missing where \code{z} is), with attributes
+\code{daylight} (hours the sun is above a flat horizon) and \code{extent}
 }
 \description{
 Sun positions every \code{step} minutes over the local day (at the middle of each step),

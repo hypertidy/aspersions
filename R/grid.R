@@ -20,9 +20,10 @@ grid_args <- function(z, extent, label = "z") {
   if (!(dx > 0 && dy > 0)) stop("extent must have xmax > xmin and ymax > ymin", call. = FALSE)
   if (abs(dx - dy) > 1e-6 * max(dx, dy)) stop(sprintf("cells must be square (%s: %g x %g)", label, dx, dy), call. = FALSE)
   v <- as.vector(t(z))
+  missing <- !is.finite(z)
   v[!is.finite(v)] <- 0
   list(z = as.double(v), nrow = as.integer(nr), ncol = as.integer(nc), x0 = extent[1L], ytop = extent[4L], cell = dx,
-       extent = extent)
+       extent = extent, missing = missing)
 }
 no_far <- list(z = double(0), nrow = 0L, ncol = 0L, x0 = 0, ytop = 0, cell = 1)
 far_args <- function(far, far_extent) {

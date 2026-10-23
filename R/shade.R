@@ -13,7 +13,7 @@
 #'   to `azimuth`; 0 for a grid aligned with true north. In polar stereographic
 #'   (EPSG:3031, EPSG:3413 style) it is the longitude, or minus it in the north
 #' @return logical matrix like `z`, `TRUE` in shadow (all `TRUE` when the sun is down),
-#'   with attribute `extent`
+#'   with attribute `extent`. Missing heights cast as 0 m and are missing in the result.
 #' @export
 #' @examples
 #' z <- volcano[nrow(volcano):1, ncol(volcano):1]
@@ -28,7 +28,9 @@ cast_shade <- function(z, extent = NULL, azimuth, elevation, far = NULL, far_ext
   if (length(azimuth) != 1L || length(elevation) != 1L) stop("one sun position at a time; see sun_hours() for many", call. = FALSE)
   g <- as_grid(z, extent)
   w <- sun_weight(g$z, g$extent, azimuth, elevation, 1, far, far_extent, convergence)
-  structure(matrix(w == 0, nrow(g$z), ncol(g$z), byrow = TRUE), extent = g$extent)
+  m <- matrix(w == 0, nrow(g$z), ncol(g$z), byrow = TRUE)
+  m[!is.finite(g$z)] <- NA
+  structure(m, extent = g$extent)
 }
 
 sun_weight <- function(z, extent, azimuth, elevation, weight, far, far_extent, convergence) {
@@ -48,8 +50,8 @@ sun_weight <- function(z, extent, azimuth, elevation, weight, far, far_extent, c
 #' @param lon,lat where the sun is computed from (the middle of the grid, say), degrees
 #' @param tz time zone of `date`
 #' @param step minutes between sun positions
-#' @return matrix like `z` of hours of direct sun, with attributes `daylight` (hours the
-#'   sun is above a flat horizon) and `extent`
+#' @return matrix like `z` of hours of direct sun (missing where `z` is), with attributes
+#'   `daylight` (hours the sun is above a flat horizon) and `extent`
 #' @export
 #' @examples
 #' ## Maungawhau, Auckland
@@ -64,7 +66,9 @@ sun_hours <- function(z, extent = NULL, date, lon, lat, tz = "UTC", step = 10, f
   sp <- sun_position(t0 + mins * 60, lon, lat)
   g <- as_grid(z, extent)
   w <- sun_weight(g$z, g$extent, sp$azimuth, sp$elevation, rep(step / 60, length(mins)), far, far_extent, convergence)
-  structure(matrix(w, nrow(g$z), ncol(g$z), byrow = TRUE), daylight = sum(sp$elevation > 0) * step / 60, extent = g$extent)
+  m <- matrix(w, nrow(g$z), ncol(g$z), byrow = TRUE)
+  m[!is.finite(g$z)] <- NA
+  structure(m, daylight = sum(sp$elevation > 0) * step / 60, extent = g$extent)
 }
 
 #' Where the sun is

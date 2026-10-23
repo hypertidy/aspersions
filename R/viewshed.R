@@ -26,8 +26,12 @@
 #'   cell (0 to skip)
 #' @param pieces keep the visible polygons
 #' @param sectors sectors per 90 degree wedge (more: less bookkeeping per sector)
+#' Missing heights (sea, say) are treated as 0 m for the line of sight, so open water does
+#' not block the view, and are missing in `visible`.
+#'
 #' @return a list with `visible` (matrix like `z`, fraction of each cell visible, for
-#'   `ximage::ximage(v$visible, extent = v$extent)`), `extent`, `area`
+#'   `ximage::ximage(v$visible, extent = v$extent)`), `extent`, `area` (includes ground
+#'   that was missing in `z`)
 #'   (visible area, m^2, including `far`), `skyline` (data frame of `azimuth`, degrees
 #'   clockwise from grid north, and `elevation` of the horizon, degrees), `pieces` (data
 #'   frame of polygon vertices `x`, `y` with `piece`, `triangle` and `ring` ids),
@@ -55,6 +59,7 @@ viewshed <- function(z, extent = NULL, xy, eye = 1.5, far = NULL, far_extent = N
                    as.integer(sectors), as.integer(supersample), isTRUE(pieces))
   if (is.null(r)) return(NULL)
   vis <- if (length(r$visible)) matrix(r$visible, g$nrow, g$ncol, byrow = TRUE) else NULL
+  if (!is.null(vis)) vis[g$missing] <- NA
   structure(list(visible = vis, extent = g$extent, area = r$area,
                  skyline = data.frame(azimuth = 0:359, elevation = r$skyline),
                  pieces = pieces_df(r$pieces),
@@ -69,7 +74,7 @@ print.aspersions_viewshed <- function(x, ...) {
   cat(sprintf("  eye at (%.1f, %.1f), height %.1f\n", x$eye[["x"]], x$eye[["y"]], x$eye[["z"]]))
   cat(sprintf("  visible: %s m^2 from %s of %s triangles\n", format(signif(x$area, 4), big.mark = ","),
               format(x$n_visible_triangles, big.mark = ","), format(x$n_triangles, big.mark = ",")))
-  if (!is.null(x$visible)) cat(sprintf("  %.1f%% of the grid visible\n", 100 * mean(x$visible)))
+  if (!is.null(x$visible)) cat(sprintf("  %.1f%% of the grid visible\n", 100 * mean(x$visible, na.rm = TRUE)))
   if (!is.null(x$pieces)) cat(sprintf("  %d visible pieces\n", length(unique(x$pieces$piece))))
   cat(sprintf("  skyline: %.1f to %.1f degrees\n", min(x$skyline$elevation), max(x$skyline$elevation)))
   invisible(x)

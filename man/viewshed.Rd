@@ -42,11 +42,14 @@ cell (0 to skip)}
 
 \item{pieces}{keep the visible polygons}
 
-\item{sectors}{sectors per 90 degree wedge (more: less bookkeeping per sector)}
+\item{sectors}{sectors per 90 degree wedge (more: less bookkeeping per sector)
+Missing heights (sea, say) are treated as 0 m for the line of sight, so open water does
+not block the view, and are missing in \code{visible}.}
 }
 \value{
 a list with \code{visible} (matrix like \code{z}, fraction of each cell visible, for
-\code{ximage::ximage(v$visible, extent = v$extent)}), \code{extent}, \code{area}
+\code{ximage::ximage(v$visible, extent = v$extent)}), \code{extent}, \code{area} (includes ground
+that was missing in \code{z})
 (visible area, m^2, including \code{far}), \code{skyline} (data frame of \code{azimuth}, degrees
 clockwise from grid north, and \code{elevation} of the horizon, degrees), \code{pieces} (data
 frame of polygon vertices \code{x}, \code{y} with \code{piece}, \code{triangle} and \code{ring} ids),

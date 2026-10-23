@@ -30,7 +30,9 @@ viewshed_mesh(
 \item{curvature}{lower the terrain by \verb{d^2 / 2R} (earth curvature with standard
 refraction, k = 0.13)}
 
-\item{sectors}{sectors per 90 degree wedge (more: less bookkeeping per sector)}
+\item{sectors}{sectors per 90 degree wedge (more: less bookkeeping per sector)
+Missing heights (sea, say) are treated as 0 m for the line of sight, so open water does
+not block the view, and are missing in \code{visible}.}
 }
 \value{
 a list with \code{area}, \code{skyline}, \code{pieces} (as \code{\link[=viewshed]{viewshed()}}), \code{eye}, and

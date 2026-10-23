@@ -62,9 +62,13 @@ attr(vh, "gis")$dim
 `read_ds()` gives the heights with their georeferencing attached, and both ximage and aspersions take
 that directly.
 
+Heights run from sea level in the hills to over a kilometre on the ice sheet, so the greys are spread
+evenly over the heights present rather than over the range:
+
 ```{r overview}
-relief <- hcl.colors(64, "Grays")
-ximage(vh, col = relief, asp = 1, axes = FALSE)
+relief <- grey.colors(64, 0.15, 0.95)
+rb <- unique(quantile(vh, seq(0, 1, length.out = 65), na.rm = TRUE))
+ximage(vh, col = relief[seq_len(length(rb) - 1)], breaks = rb, asp = 1, axes = FALSE)
 points(davis[1], davis[2], pch = 21, bg = "orangered", cex = 1.4)
 ```
 
@@ -83,9 +87,9 @@ lookout <- c(xs[k[2]], ys[k[1]])
 lookout
 z[k[1], k[2]]
 
-v <- viewshed(vh, xy = lookout, eye = 2)
+v <- viewshed(vh, xy = lookout, eye = 2, pieces = FALSE)
 v
-ximage(vh, col = relief, asp = 1, axes = FALSE)
+ximage(vh, col = relief[seq_len(length(rb) - 1)], breaks = rb, asp = 1, axes = FALSE)
 ximage(v$visible, extent = v$extent, add = TRUE,
        col = c("transparent", adjustcolor("gold", 0.7)), breaks = c(-1, 0.01, 2))
 points(lookout[1], lookout[2], pch = 21, bg = "orangered", cex = 1.4)
@@ -104,15 +108,16 @@ abline(h = 0, lty = 3)
 ### In detail: 2 m near the lookout
 
 The full-resolution tiles come through the same source. Here a 4 km square around the lookout is read at 2 m,
-with the 20 m grid behind it for the terrain further out. The near grid is two million cells, so four million
-triangles.
+with the 20 m grid behind it for the terrain further out. The near grid is four million cells, so eight million
+triangles. The visible polygons aren't needed here, so `pieces = FALSE` skips collecting them.
 
 ```{r detail}
 near_box <- c(lookout[1] - 2000, lookout[1] + 2000, lookout[2] - 2000, lookout[2] + 2000)
 near <- read_rema(near_box, 2)
-vn <- viewshed(near, xy = lookout, eye = 2, far = z, far_extent = ex)
+vn <- viewshed(near, xy = lookout, eye = 2, far = z, far_extent = ex, pieces = FALSE)
 vn
-ximage(near, col = relief, asp = 1, axes = FALSE)
+nb <- unique(quantile(near, seq(0, 1, length.out = 65), na.rm = TRUE))
+ximage(near, col = relief[seq_len(length(nb) - 1)], breaks = nb, asp = 1, axes = FALSE)
 ximage(vn$visible, extent = vn$extent, add = TRUE,
        col = c("transparent", adjustcolor("gold", 0.7)), breaks = c(-1, 0.01, 2))
 points(lookout[1], lookout[2], pch = 21, bg = "orangered", cex = 1.4)
@@ -137,7 +142,7 @@ At local midnight on midsummer's day the sun is low in the south, and the hills 
 p <- sun_position(as.POSIXct("2026-12-21 00:00", tz = "Antarctica/Davis"), lonlat[1], lonlat[2])
 p
 s <- cast_shade(vh, azimuth = p$azimuth, elevation = p$elevation, convergence = lonlat[1])
-ximage(vh, col = relief, asp = 1, axes = FALSE)
+ximage(vh, col = relief[seq_len(length(rb) - 1)], breaks = rb, asp = 1, axes = FALSE)
 ximage(s * 1, extent = attr(s, "extent"), add = TRUE, col = c("transparent", adjustcolor("midnightblue", 0.55)))
 ```
 
@@ -154,8 +159,8 @@ ximage(h, extent = attr(h, "extent"), col = hcl.colors(64, "Inferno"), asp = 1, 
 
 ## Notes
 
-- REMA is a surface model of snow, ice and rock. Over sea and sea ice it has no data, which is read as missing
-  and treated as 0 m.
+- REMA is a surface model of snow, ice and rock. Over open water it has no data. For the line of sight and the
+  shadows that counts as 0 m, so water doesn't block anything, and it stays missing in the results.
 - The 20 m and 2 m grids here are resampled from REMA's 32 m and 2 m levels by GDAL's warper with bilinear
   resampling.
 - The browser explorer for the same data source, with hillshade, profiles and per-level drill-down, is at

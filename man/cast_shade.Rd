@@ -34,7 +34,7 @@ to \code{azimuth}; 0 for a grid aligned with true north. In polar stereographic
 }
 \value{
 logical matrix like \code{z}, \code{TRUE} in shadow (all \code{TRUE} when the sun is down),
-with attribute \code{extent}
+with attribute \code{extent}. Missing heights cast as 0 m and are missing in the result.
 }
 \description{
 Cast shadows for one sun position, by a single directional sweep over the grid: a

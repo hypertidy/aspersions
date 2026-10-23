@@ -89,3 +89,14 @@ test_that("a gdalraster::read_ds() style vector works in place of matrix + exten
   expect_equal(a$visible, b$visible)
   expect_equal(unclass(cast_shade(v, azimuth = 300, elevation = 15)), unclass(cast_shade(g$z, g$extent, 300, 15)))
 })
+
+test_that("missing heights are missing in the results", {
+  g <- volcano_grid(); z <- g$z
+  z[1:10, 1:10] <- NA
+  v <- viewshed(z, g$extent, at(g, 300, 300), pieces = FALSE)
+  expect_true(all(is.na(v$visible[1:10, 1:10])))
+  expect_false(anyNA(v$visible[-(1:10), ]))
+  s <- cast_shade(z, g$extent, 300, 15)
+  expect_true(all(is.na(s[1:10, 1:10])))
+  expect_false(anyNA(s[-(1:10), ]))
+})
