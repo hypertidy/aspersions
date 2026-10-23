@@ -58,7 +58,8 @@ cast_shade(
 ## Value
 
 logical matrix like `z`, `TRUE` in shadow (all `TRUE` when the sun is
-down), with attribute `extent`
+down), with attribute `extent`. Missing heights cast as 0 m and are
+missing in the result.
 
 ## Examples
 

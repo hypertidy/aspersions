@@ -71,16 +71,18 @@ viewshed(
 - sectors:
 
   sectors per 90 degree wedge (more: less bookkeeping per sector)
+  Missing heights (sea, say) are treated as 0 m for the line of sight,
+  so open water does not block the view, and are missing in `visible`.
 
 ## Value
 
 a list with `visible` (matrix like `z`, fraction of each cell visible,
 for `ximage::ximage(v$visible, extent = v$extent)`), `extent`, `area`
-(visible area, m^2, including `far`), `skyline` (data frame of
-`azimuth`, degrees clockwise from grid north, and `elevation` of the
-horizon, degrees), `pieces` (data frame of polygon vertices `x`, `y`
-with `piece`, `triangle` and `ring` ids), `eye` (x, y, z of the eye) and
-counts. `NULL` if `xy` is outside `z`.
+(includes ground that was missing in `z`) (visible area, m^2, including
+`far`), `skyline` (data frame of `azimuth`, degrees clockwise from grid
+north, and `elevation` of the horizon, degrees), `pieces` (data frame of
+polygon vertices `x`, `y` with `piece`, `triangle` and `ring` ids),
+`eye` (x, y, z of the eye) and counts. `NULL` if `xy` is outside `z`.
 
 ## Details
 

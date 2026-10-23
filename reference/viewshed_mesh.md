@@ -53,6 +53,8 @@ viewshed_mesh(
 - sectors:
 
   sectors per 90 degree wedge (more: less bookkeeping per sector)
+  Missing heights (sea, say) are treated as 0 m for the line of sight,
+  so open water does not block the view, and are missing in `visible`.
 
 ## Value
 

@@ -111,13 +111,16 @@ cell (0 to skip)</p></dd>
 
 
 <dt id="arg-sectors">sectors<a class="anchor" aria-label="anchor" href="#arg-sectors"></a></dt>
-<dd><p>sectors per 90 degree wedge (more: less bookkeeping per sector)</p></dd>
+<dd><p>sectors per 90 degree wedge (more: less bookkeeping per sector)
+Missing heights (sea, say) are treated as 0 m for the line of sight, so open water does
+not block the view, and are missing in <code>visible</code>.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>a list with <code>visible</code> (matrix like <code>z</code>, fraction of each cell visible, for
-<code>ximage::ximage(v$visible, extent = v$extent)</code>), <code>extent</code>, <code>area</code>
+<code>ximage::ximage(v$visible, extent = v$extent)</code>), <code>extent</code>, <code>area</code> (includes ground
+that was missing in <code>z</code>)
 (visible area, m^2, including <code>far</code>), <code>skyline</code> (data frame of <code>azimuth</code>, degrees
 clockwise from grid north, and <code>elevation</code> of the horizon, degrees), <code>pieces</code> (data
 frame of polygon vertices <code>x</code>, <code>y</code> with <code>piece</code>, <code>triangle</code> and <code>ring</code> ids),

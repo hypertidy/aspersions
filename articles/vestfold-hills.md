@@ -46,10 +46,15 @@ attr(vh, "gis")$dim
 gives the heights with their georeferencing attached, and both ximage
 and aspersions take that directly.
 
+Heights run from sea level in the hills to over a kilometre on the ice
+sheet, so the greys are spread evenly over the heights present rather
+than over the range:
+
 ``` r
 
-relief <- hcl.colors(64, "Grays")
-ximage(vh, col = relief, asp = 1, axes = FALSE)
+relief <- grey.colors(64, 0.15, 0.95)
+rb <- unique(quantile(vh, seq(0, 1, length.out = 65), na.rm = TRUE))
+ximage(vh, col = relief[seq_len(length(rb) - 1)], breaks = rb, asp = 1, axes = FALSE)
 points(davis[1], davis[2], pch = 21, bg = "orangered", cex = 1.4)
 ```
 
@@ -74,15 +79,14 @@ lookout
 z[k[1], k[2]]
 #> [1] 87.28956
 
-v <- viewshed(vh, xy = lookout, eye = 2)
+v <- viewshed(vh, xy = lookout, eye = 2, pieces = FALSE)
 v
 #> <aspersions viewshed>
 #>   eye at (2300490.0, 489530.0), height 89.3
 #>   visible: 644,100,000 m^2 from 3,281,192 of 8,396,802 triangles
-#>   38.6% of the grid visible
-#>   6843816 visible pieces
+#>   40.7% of the grid visible
 #>   skyline: -0.4 to 0.9 degrees
-ximage(vh, col = relief, asp = 1, axes = FALSE)
+ximage(vh, col = relief[seq_len(length(rb) - 1)], breaks = rb, asp = 1, axes = FALSE)
 ximage(v$visible, extent = v$extent, add = TRUE,
        col = c("transparent", adjustcolor("gold", 0.7)), breaks = c(-1, 0.01, 2))
 points(lookout[1], lookout[2], pch = 21, bg = "orangered", cex = 1.4)
@@ -107,22 +111,23 @@ abline(h = 0, lty = 3)
 
 The full-resolution tiles come through the same source. Here a 4 km
 square around the lookout is read at 2 m, with the 20 m grid behind it
-for the terrain further out. The near grid is two million cells, so four
-million triangles.
+for the terrain further out. The near grid is four million cells, so
+eight million triangles. The visible polygons aren’t needed here, so
+`pieces = FALSE` skips collecting them.
 
 ``` r
 
 near_box <- c(lookout[1] - 2000, lookout[1] + 2000, lookout[2] - 2000, lookout[2] + 2000)
 near <- read_rema(near_box, 2)
-vn <- viewshed(near, xy = lookout, eye = 2, far = z, far_extent = ex)
+vn <- viewshed(near, xy = lookout, eye = 2, far = z, far_extent = ex, pieces = FALSE)
 vn
 #> <aspersions viewshed>
 #>   eye at (2300490.0, 489530.0), height 90.1
 #>   visible: 647,600,000 m^2 from 5,794,800 of 16,308,804 triangles
 #>   31.3% of the grid visible
-#>   12174471 visible pieces
 #>   skyline: -0.4 to 1.0 degrees
-ximage(near, col = relief, asp = 1, axes = FALSE)
+nb <- unique(quantile(near, seq(0, 1, length.out = 65), na.rm = TRUE))
+ximage(near, col = relief[seq_len(length(nb) - 1)], breaks = nb, asp = 1, axes = FALSE)
 ximage(vn$visible, extent = vn$extent, add = TRUE,
        col = c("transparent", adjustcolor("gold", 0.7)), breaks = c(-1, 0.01, 2))
 points(lookout[1], lookout[2], pch = 21, bg = "orangered", cex = 1.4)
@@ -158,7 +163,7 @@ p
 #>    azimuth elevation
 #> 1 204.1893  4.211629
 s <- cast_shade(vh, azimuth = p$azimuth, elevation = p$elevation, convergence = lonlat[1])
-ximage(vh, col = relief, asp = 1, axes = FALSE)
+ximage(vh, col = relief[seq_len(length(rb) - 1)], breaks = rb, asp = 1, axes = FALSE)
 ximage(s * 1, extent = attr(s, "extent"), add = TRUE, col = c("transparent", adjustcolor("midnightblue", 0.55)))
 ```
 
@@ -174,8 +179,8 @@ h <- sun_hours(vh, date = "2026-12-21", lon = lonlat[1], lat = lonlat[2],
 attr(h, "daylight")
 #> [1] 24
 summary(as.vector(h))
-#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-#>   7.167  22.333  24.000  22.781  24.000  24.000
+#>    Min. 1st Qu.  Median    Mean 3rd Qu.    Max.     NAs 
+#>   7.167  22.167  24.000  22.729  24.000  24.000  216775
 ximage(h, extent = attr(h, "extent"), col = hcl.colors(64, "Inferno"), asp = 1, axes = FALSE)
 ```
 
@@ -183,8 +188,9 @@ ximage(h, extent = attr(h, "extent"), col = hcl.colors(64, "Inferno"), asp = 1, 
 
 ## Notes
 
-- REMA is a surface model of snow, ice and rock. Over sea and sea ice it
-  has no data, which is read as missing and treated as 0 m.
+- REMA is a surface model of snow, ice and rock. Over open water it has
+  no data. For the line of sight and the shadows that counts as 0 m, so
+  water doesn’t block anything, and it stays missing in the results.
 - The 20 m and 2 m grids here are resampled from REMA’s 32 m and 2 m
   levels by GDAL’s warper with bilinear resampling.
 - The browser explorer for the same data source, with hillshade,

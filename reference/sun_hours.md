@@ -64,8 +64,9 @@ sun_hours(
 
 ## Value
 
-matrix like `z` of hours of direct sun, with attributes `daylight`
-(hours the sun is above a flat horizon) and `extent`
+matrix like `z` of hours of direct sun (missing where `z` is), with
+attributes `daylight` (hours the sun is above a flat horizon) and
+`extent`
 
 ## Examples
 
