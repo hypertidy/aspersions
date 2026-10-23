@@ -17,7 +17,8 @@ test_that("cast_shade agrees with brute-force ray marching", {
     s <- cast_shade(g$z, g$extent, sun[1], sun[2])
     expect_equal(dim(s), dim(g$z))
     rc <- cbind(sample(2:(nrow(g$z) - 1), 300, TRUE), sample(2:(ncol(g$z) - 1), 300, TRUE))
-    b <- apply(rc, 1, function(k) brute_shade(g$z, g$extent, sun[1], sun[2], (k[2] - 0.5) * cell, 610 - (k[1] - 0.5) * cell))
+    b <- apply(rc, 1, function(k) brute_shade(g$z, g$extent, sun[1], sun[2],
+                                              g$extent[1] + (k[2] - 0.5) * cell, g$extent[4] - (k[1] - 0.5) * cell))
     expect_gt(mean(s[rc] == b), 0.95)
   }
 })
@@ -40,7 +41,7 @@ test_that("sun_position matches known values", {
 
 test_that("sun_hours is bounded by daylight", {
   g <- volcano_grid()
-  h <- sun_hours(g$z, g$extent, "2026-06-21", lon = 174.77, lat = -36.88, tz = "Pacific/Auckland", step = 20)
+  h <- sun_hours(g$z, g$extent, "2026-06-21", lon = 174.764, lat = -36.876, tz = "Pacific/Auckland", step = 20)
   expect_equal(dim(h), dim(g$z))
   expect_true(all(h >= 0 & h <= attr(h, "daylight") + 1e-9))
   expect_gt(attr(h, "daylight"), 9)

@@ -19,8 +19,10 @@ the front-to-back order from \code{\link[=mesh_order]{mesh_order()}}.
 sun.
 }
 
-Grids are a matrix of heights with row 1 at the north edge (as \code{terra::as.matrix(x, wide = TRUE)} gives), square cells, and an extent \code{c(xmin, xmax, ymin, ymax)} in a
-projected coordinate system in metres.
+Grids are a matrix of heights with row 1 at the north edge, square cells, and an
+extent \code{c(xmin, xmax, ymin, ymax)} in a projected coordinate system in metres; or
+directly the result of \code{gdalraster::read_ds()}, which carries its own extent. Results
+are matrices in the same layout, ready for \code{ximage::ximage(m, extent = ...)}.
 }
 \seealso{
 Useful links:

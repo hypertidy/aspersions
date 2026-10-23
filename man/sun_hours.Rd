@@ -6,7 +6,7 @@
 \usage{
 sun_hours(
   z,
-  extent,
+  extent = NULL,
   date,
   lon,
   lat,
@@ -18,7 +18,9 @@ sun_hours(
 )
 }
 \arguments{
-\item{z}{matrix of heights, row 1 at the north edge, square cells}
+\item{z}{matrix of heights, row 1 at the north edge, square cells; or the result of
+\code{gdalraster::read_ds()} (a vector with a \code{gis} attribute), in which case \code{extent} is
+taken from it}
 
 \item{extent}{\code{c(xmin, xmax, ymin, ymax)} of \code{z}}
 
@@ -34,19 +36,22 @@ sun_hours(
 terrain further out; its cells that touch \code{z} are skipped}
 
 \item{convergence}{grid azimuth of true north (meridian convergence, degrees), added
-to \code{azimuth}; 0 for a grid aligned with true north}
+to \code{azimuth}; 0 for a grid aligned with true north. In polar stereographic
+(EPSG:3031, EPSG:3413 style) it is the longitude, or minus it in the north}
 }
 \value{
-matrix like \code{z} of hours of direct sun, with attribute \code{daylight} (hours the
-sun is above a flat horizon)
+matrix like \code{z} of hours of direct sun, with attributes \code{daylight} (hours the
+sun is above a flat horizon) and \code{extent}
 }
 \description{
 Sun positions every \code{step} minutes over the local day (at the middle of each step),
 one shadow sweep each, summed.
 }
 \examples{
-z <- t(volcano)[ncol(volcano):1, ]
-h <- sun_hours(z, c(0, 870, 0, 610), "2026-06-21", lon = 174.77, lat = -36.88,
+## Maungawhau, Auckland
+z <- volcano[nrow(volcano):1, ncol(volcano):1]
+ex <- c(2667400, 2668010, 6478700, 6479570)
+h <- sun_hours(z, ex, "2026-06-21", lon = 174.764, lat = -36.876,
                tz = "Pacific/Auckland", step = 20)
 range(h)
 }

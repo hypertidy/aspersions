@@ -1,6 +1,10 @@
+# volcano georeferenced: New Zealand Map Grid (EPSG:27200), 10 m cells, row 1 north
 volcano_grid <- function() {
-  list(z = t(datasets::volcano)[ncol(datasets::volcano):1, ], extent = c(0, 870, 0, 610))
+  v <- datasets::volcano
+  list(z = v[nrow(v):1, ncol(v):1], extent = c(2667400, 2668010, 6478700, 6479570))
 }
+# a point at (dx, dy) metres from the grid's south-west corner
+at <- function(g, dx, dy) c(g$extent[1] + dx, g$extent[3] + dy)
 # height on the grid's TIN (vertices at cell centres, quads split top-left to bottom-right)
 tin_height <- function(z, extent, x, y) {
   cell <- (extent[2] - extent[1]) / ncol(z)

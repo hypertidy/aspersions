@@ -10,9 +10,10 @@
 #'   [sun_hours()] for the hours of direct sun over a day, with [sun_position()] for the
 #'   sun.
 #'
-#' Grids are a matrix of heights with row 1 at the north edge (as `terra::as.matrix(x,
-#' wide = TRUE)` gives), square cells, and an extent `c(xmin, xmax, ymin, ymax)` in a
-#' projected coordinate system in metres.
+#' Grids are a matrix of heights with row 1 at the north edge, square cells, and an
+#' extent `c(xmin, xmax, ymin, ymax)` in a projected coordinate system in metres; or
+#' directly the result of `gdalraster::read_ds()`, which carries its own extent. Results
+#' are matrices in the same layout, ready for `ximage::ximage(m, extent = ...)`.
 #'
 #' @keywords internal
 "_PACKAGE"

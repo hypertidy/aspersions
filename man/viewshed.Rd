@@ -6,7 +6,7 @@
 \usage{
 viewshed(
   z,
-  extent,
+  extent = NULL,
   xy,
   eye = 1.5,
   far = NULL,
@@ -19,7 +19,9 @@ viewshed(
 )
 }
 \arguments{
-\item{z}{matrix of heights, row 1 at the north edge, square cells}
+\item{z}{matrix of heights, row 1 at the north edge, square cells; or the result of
+\code{gdalraster::read_ds()} (a vector with a \code{gis} attribute), in which case \code{extent} is
+taken from it}
 
 \item{extent}{\code{c(xmin, xmax, ymin, ymax)} of \code{z}}
 
@@ -43,7 +45,8 @@ cell (0 to skip)}
 \item{sectors}{sectors per 90 degree wedge (more: less bookkeeping per sector)}
 }
 \value{
-a list with \code{visible} (matrix like \code{z}, fraction of each cell visible), \code{area}
+a list with \code{visible} (matrix like \code{z}, fraction of each cell visible, for
+\code{ximage::ximage(v$visible, extent = v$extent)}), \code{extent}, \code{area}
 (visible area, m^2, including \code{far}), \code{skyline} (data frame of \code{azimuth}, degrees
 clockwise from grid north, and \code{elevation} of the horizon, degrees), \code{pieces} (data
 frame of polygon vertices \code{x}, \code{y} with \code{piece}, \code{triangle} and \code{ring} ids),
@@ -63,8 +66,14 @@ above the horizon, which it then raises. The visible pieces map back to the grou
 convex polygons, and the horizon left at the end is the skyline.
 }
 \examples{
-z <- t(volcano)[ncol(volcano):1, ]
-v <- viewshed(z, c(0, 870, 0, 610), c(300, 200))
+## volcano, georeferenced (New Zealand Map Grid, EPSG:27200)
+z <- volcano[nrow(volcano):1, ncol(volcano):1]
+ex <- c(2667400, 2668010, 6478700, 6479570)
+v <- viewshed(z, ex, c(2667700, 6478900))
 v
-image(v$visible[nrow(z):1, ] |> t())
+if (requireNamespace("ximage", quietly = TRUE)) {
+  ximage::ximage(z, extent = ex, col = grey.colors(64), asp = 1)
+  ximage::ximage(v$visible, extent = ex, add = TRUE,
+                 col = c(NA, adjustcolor("gold", 0.7)), breaks = c(-1, 0.01, 2))
+}
 }

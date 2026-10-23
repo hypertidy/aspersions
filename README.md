@@ -12,6 +12,10 @@ The work is done in Rust (the `osvm` crate, vendored in `src/rust/osvm`) through
 in the browser in [lunashade](https://github.com/mdsumner/lunashade), a sun, shade and viewshed map for the
 Tasmania 2 m DEM. The two implementations are checked against each other and agree to the last digit.
 
+Website: <https://hypertidy.github.io/aspersions/>, with a showcase on the
+[Vestfold Hills](https://hypertidy.github.io/aspersions/articles/vestfold-hills.html) in East Antarctica.
+It reads the Reference Elevation Model of Antarctica live through GDAL.
+
 ## Installation
 
 You need a Rust toolchain (`cargo`, `rustc`): see <https://rustup.rs>.
@@ -23,44 +27,72 @@ remotes::install_github("hypertidy/aspersions")
 
 ## Grids
 
-A grid is a matrix of heights with row 1 at the north edge, as `terra::as.matrix(x, wide = TRUE)` gives. It
-needs square cells and an extent `c(xmin, xmax, ymin, ymax)` in a projected coordinate system in metres.
+A grid is a matrix of heights with row 1 at the north edge. It needs square cells and an extent
+`c(xmin, xmax, ymin, ymax)` in a projected coordinate system in metres. The result of `gdalraster::read_ds()`
+works directly too, because it carries its own extent. Results come back in the same layout, ready for
+[ximage](https://github.com/hypertidy/ximage).
+
+The examples use `volcano`, georeferenced as in [mdsumner/volcano](https://github.com/mdsumner/volcano):
+Maungawhau in Auckland, 10 m cells in the New Zealand Map Grid (EPSG:27200).
 
 ``` r
 library(aspersions)
-z <- t(volcano)[ncol(volcano):1, ]   # 61 x 87, row 1 north
-ex <- c(0, 870, 0, 610)              # 10 m cells
+library(ximage)
+z <- volcano[nrow(volcano):1, ncol(volcano):1]   # 87 x 61, row 1 north
+ex <- c(2667400, 2668010, 6478700, 6479570)
 ```
 
 ## What can be seen from here
 
 ``` r
-v <- viewshed(z, ex, c(300, 200), eye = 1.5)
+v <- viewshed(z, ex, c(2667700, 6479100), eye = 1.5)
 v
 #> <aspersions viewshed>
-#>   eye at (300, 200), 172.5 m
-#>   visible: 7.205e+04 m^2 from 1537 of 10320 triangles
-#>   14.5% of the grid visible
-#>   ...
-head(v$pieces)      # visible polygons: x, y, piece, triangle, ring
-head(v$skyline)     # azimuth (from grid north) and elevation of the horizon
+#>   eye at (2667700.0, 6479100.0), height 175.0
+#>   visible: 85,110 m^2 from 1,848 of 10,320 triangles
+#>   17.2% of the grid visible
+#>   10071 visible pieces
+#>   skyline: -13.1 to 11.0 degrees
+
+ximage(z, extent = ex, col = grey.colors(64), asp = 1)
+ximage(v$visible, extent = v$extent, add = TRUE,
+       col = c("transparent", "gold"), breaks = c(-1, 0.01, 2))
+v$pieces    # the visible polygons: x, y, piece, triangle, ring
+v$skyline   # azimuth (from grid north) and elevation of the horizon
 ```
 
 ![](man/figures/viewshed.png)
 
-`far` and `far_extent` add a coarser grid around `z` for terrain further out, and `curvature = TRUE` (the default)
-lowers distant terrain for the curve of the earth, with standard refraction.
+`far` and `far_extent` add a coarser grid around `z` for terrain further out. `curvature = TRUE` (the
+default) lowers distant terrain for the curve of the earth, with standard refraction.
 
 ## Where the terrain shades itself
 
 ``` r
-s <- cast_shade(z, ex, azimuth = 300, elevation = 12)               # TRUE in shadow
-h <- sun_hours(z, ex, "2026-06-21", lon = 174.77, lat = -36.88,
-               tz = "Pacific/Auckland", step = 5)                     # hours of direct sun
-sun_position(as.POSIXct("2026-06-21 12:00", tz = "Australia/Hobart"), 147.3, -42.9)
+s <- cast_shade(z, ex, azimuth = 300, elevation = 12)                 # TRUE in shadow
+h <- sun_hours(z, ex, "2026-06-21", lon = 174.764, lat = -36.876,
+               tz = "Pacific/Auckland", step = 5)                       # hours of direct sun
+sun_position(as.POSIXct("2026-06-21 12:00", tz = "Pacific/Auckland"), 174.764, -36.876)
 ```
 
 ![](man/figures/shade.png)
+
+`convergence` corrects for a grid whose north isn't true north. In polar stereographic, the grid azimuth of
+true north is the longitude: see the Vestfold Hills article.
+
+## From GDAL
+
+``` r
+library(gdalraster)
+dsn <- "/vsicurl/https://raw.githubusercontent.com/mdsumner/rema-ovr/main/REMA-2m_dem_ovr.vrt"
+tf <- tempfile(fileext = ".tif")
+warp(dsn, tf, t_srs = "EPSG:3031",
+     cl_arg = c("-te", 2289000, 462000, 2330000, 503000, "-tr", 20, 20, "-r", "bilinear"))
+ds <- new(GDALRaster, tf); d <- read_ds(ds); ds$close()
+v <- viewshed(d, xy = c(2302286, 490792), eye = 10)
+ximage(d, asp = 1); ximage(v$visible, extent = v$extent, add = TRUE,
+                           col = c("transparent", "gold"), breaks = c(-1, 0.01, 2))
+```
 
 ## How
 

@@ -1,0 +1,24 @@
+url: https://hypertidy.github.io/aspersions/
+template:
+  bootstrap: 5
+
+reference:
+  - title: Sight lines
+    contents:
+      - viewshed
+      - viewshed_mesh
+      - mesh_order
+  - title: Shade and sun
+    contents:
+      - cast_shade
+      - sun_hours
+      - sun_position
+  - title: Package
+    contents:
+      - aspersions-package
+
+articles:
+  - title: Showcase
+    navbar: Showcase
+    contents:
+      - articles/vestfold-hills

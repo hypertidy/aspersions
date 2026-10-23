@@ -11,7 +11,9 @@
 #' above the horizon, which it then raises. The visible pieces map back to the ground as
 #' convex polygons, and the horizon left at the end is the skyline.
 #'
-#' @param z matrix of heights, row 1 at the north edge, square cells
+#' @param z matrix of heights, row 1 at the north edge, square cells; or the result of
+#'   `gdalraster::read_ds()` (a vector with a `gis` attribute), in which case `extent` is
+#'   taken from it
 #' @param extent `c(xmin, xmax, ymin, ymax)` of `z`
 #' @param xy the eye, `c(x, y)`, inside `z` (inside the hull of its cell centres)
 #' @param eye height of the eye above the ground (m)
@@ -24,18 +26,25 @@
 #'   cell (0 to skip)
 #' @param pieces keep the visible polygons
 #' @param sectors sectors per 90 degree wedge (more: less bookkeeping per sector)
-#' @return a list with `visible` (matrix like `z`, fraction of each cell visible), `area`
+#' @return a list with `visible` (matrix like `z`, fraction of each cell visible, for
+#'   `ximage::ximage(v$visible, extent = v$extent)`), `extent`, `area`
 #'   (visible area, m^2, including `far`), `skyline` (data frame of `azimuth`, degrees
 #'   clockwise from grid north, and `elevation` of the horizon, degrees), `pieces` (data
 #'   frame of polygon vertices `x`, `y` with `piece`, `triangle` and `ring` ids),
 #'   `eye` (x, y, z of the eye) and counts. `NULL` if `xy` is outside `z`.
 #' @export
 #' @examples
-#' z <- t(volcano)[ncol(volcano):1, ]
-#' v <- viewshed(z, c(0, 870, 0, 610), c(300, 200))
+#' ## volcano, georeferenced (New Zealand Map Grid, EPSG:27200)
+#' z <- volcano[nrow(volcano):1, ncol(volcano):1]
+#' ex <- c(2667400, 2668010, 6478700, 6479570)
+#' v <- viewshed(z, ex, c(2667700, 6478900))
 #' v
-#' image(v$visible[nrow(z):1, ] |> t())
-viewshed <- function(z, extent, xy, eye = 1.5, far = NULL, far_extent = NULL, max_dist = Inf,
+#' if (requireNamespace("ximage", quietly = TRUE)) {
+#'   ximage::ximage(z, extent = ex, col = grey.colors(64), asp = 1)
+#'   ximage::ximage(v$visible, extent = ex, add = TRUE,
+#'                  col = c(NA, adjustcolor("gold", 0.7)), breaks = c(-1, 0.01, 2))
+#' }
+viewshed <- function(z, extent = NULL, xy, eye = 1.5, far = NULL, far_extent = NULL, max_dist = Inf,
                      curvature = TRUE, supersample = 2L, pieces = TRUE, sectors = 64L) {
   g <- grid_args(z, extent)
   f <- far_args(far, far_extent)
@@ -46,7 +55,7 @@ viewshed <- function(z, extent, xy, eye = 1.5, far = NULL, far_extent = NULL, ma
                    as.integer(sectors), as.integer(supersample), isTRUE(pieces))
   if (is.null(r)) return(NULL)
   vis <- if (length(r$visible)) matrix(r$visible, g$nrow, g$ncol, byrow = TRUE) else NULL
-  structure(list(visible = vis, area = r$area,
+  structure(list(visible = vis, extent = g$extent, area = r$area,
                  skyline = data.frame(azimuth = 0:359, elevation = r$skyline),
                  pieces = pieces_df(r$pieces),
                  eye = c(x = xy[1L], y = xy[2L], z = r$z_eye),
@@ -57,8 +66,9 @@ viewshed <- function(z, extent, xy, eye = 1.5, far = NULL, far_extent = NULL, ma
 #' @export
 print.aspersions_viewshed <- function(x, ...) {
   cat("<aspersions viewshed>\n")
-  cat(sprintf("  eye at (%g, %g), %g m\n", x$eye[["x"]], x$eye[["y"]], x$eye[["z"]]))
-  cat(sprintf("  visible: %.4g m^2 from %d of %d triangles\n", x$area, as.integer(x$n_visible_triangles), as.integer(x$n_triangles)))
+  cat(sprintf("  eye at (%.1f, %.1f), height %.1f\n", x$eye[["x"]], x$eye[["y"]], x$eye[["z"]]))
+  cat(sprintf("  visible: %s m^2 from %s of %s triangles\n", format(signif(x$area, 4), big.mark = ","),
+              format(x$n_visible_triangles, big.mark = ","), format(x$n_triangles, big.mark = ",")))
   if (!is.null(x$visible)) cat(sprintf("  %.1f%% of the grid visible\n", 100 * mean(x$visible)))
   if (!is.null(x$pieces)) cat(sprintf("  %d visible pieces\n", length(unique(x$pieces$piece))))
   cat(sprintf("  skyline: %.1f to %.1f degrees\n", min(x$skyline$elevation), max(x$skyline$elevation)))
@@ -79,13 +89,14 @@ print.aspersions_viewshed <- function(x, ...) {
 #'   `cycles` (triangles that had to be forced into order; 0 for Delaunay meshes)
 #' @export
 #' @examples
-#' z <- t(volcano)[ncol(volcano):1, ]
-#' xy <- expand.grid(x = seq(5, 865, by = 10), y = seq(605, 5, by = -10))
+#' z <- volcano[nrow(volcano):1, ncol(volcano):1]
+#' ## vertices at cell centres, row by row from the north-west corner
+#' xy <- expand.grid(x = 2667400 + seq(5, 605, by = 10), y = 6479570 - seq(5, 865, by = 10))
 #' nc <- ncol(z); nr <- nrow(z)
 #' q <- expand.grid(c = 1:(nc - 1), r = 1:(nr - 1))
 #' tl <- (q$r - 1) * nc + q$c
 #' tri <- rbind(cbind(tl, tl + 1, tl + nc), cbind(tl + 1, tl + nc + 1, tl + nc))
-#' v <- viewshed_mesh(xy$x, xy$y, as.vector(t(z)), tri, c(300, 200))
+#' v <- viewshed_mesh(xy$x, xy$y, as.vector(t(z)), tri, c(2667700, 6478900))
 #' v$area
 viewshed_mesh <- function(x, y, z, triangles, xy, eye = 1.5, order = NULL, curvature = TRUE, sectors = 64L) {
   tri <- mesh_tri(triangles, length(x))

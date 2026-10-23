@@ -5,3 +5,4 @@ src/rust/target/
 src/rust/Cargo.lock
 *.tar.gz
 aspersions.Rcheck/
+docs/

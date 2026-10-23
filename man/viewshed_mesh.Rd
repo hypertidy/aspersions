@@ -42,12 +42,13 @@ grid with other diagonals. Triangles are fed in the front-to-back order from
 \code{\link[=mesh_order]{mesh_order()}} unless \code{order} is given. The mesh must cover a convex region.
 }
 \examples{
-z <- t(volcano)[ncol(volcano):1, ]
-xy <- expand.grid(x = seq(5, 865, by = 10), y = seq(605, 5, by = -10))
+z <- volcano[nrow(volcano):1, ncol(volcano):1]
+## vertices at cell centres, row by row from the north-west corner
+xy <- expand.grid(x = 2667400 + seq(5, 605, by = 10), y = 6479570 - seq(5, 865, by = 10))
 nc <- ncol(z); nr <- nrow(z)
 q <- expand.grid(c = 1:(nc - 1), r = 1:(nr - 1))
 tl <- (q$r - 1) * nc + q$c
 tri <- rbind(cbind(tl, tl + 1, tl + nc), cbind(tl + 1, tl + nc + 1, tl + nc))
-v <- viewshed_mesh(xy$x, xy$y, as.vector(t(z)), tri, c(300, 200))
+v <- viewshed_mesh(xy$x, xy$y, as.vector(t(z)), tri, c(2667700, 6478900))
 v$area
 }

@@ -6,7 +6,7 @@
 \usage{
 cast_shade(
   z,
-  extent,
+  extent = NULL,
   azimuth,
   elevation,
   far = NULL,
@@ -15,7 +15,9 @@ cast_shade(
 )
 }
 \arguments{
-\item{z}{matrix of heights, row 1 at the north edge, square cells}
+\item{z}{matrix of heights, row 1 at the north edge, square cells; or the result of
+\code{gdalraster::read_ds()} (a vector with a \code{gis} attribute), in which case \code{extent} is
+taken from it}
 
 \item{extent}{\code{c(xmin, xmax, ymin, ymax)} of \code{z}}
 
@@ -27,10 +29,12 @@ cast_shade(
 terrain further out; its cells that touch \code{z} are skipped}
 
 \item{convergence}{grid azimuth of true north (meridian convergence, degrees), added
-to \code{azimuth}; 0 for a grid aligned with true north}
+to \code{azimuth}; 0 for a grid aligned with true north. In polar stereographic
+(EPSG:3031, EPSG:3413 style) it is the longitude, or minus it in the north}
 }
 \value{
-logical matrix like \code{z}, \code{TRUE} in shadow (all \code{TRUE} when the sun is down)
+logical matrix like \code{z}, \code{TRUE} in shadow (all \code{TRUE} when the sun is down),
+with attribute \code{extent}
 }
 \description{
 Cast shadows for one sun position, by a single directional sweep over the grid: a
@@ -40,7 +44,12 @@ at it is above the ground. With \code{far}, a coarse surrounding grid casts firs
 earth curvature) and its shadow surface comes in over \code{z} from distant ridges.
 }
 \examples{
-z <- t(volcano)[ncol(volcano):1, ]
-s <- cast_shade(z, c(0, 870, 0, 610), azimuth = 300, elevation = 15)
+z <- volcano[nrow(volcano):1, ncol(volcano):1]
+ex <- c(2667400, 2668010, 6478700, 6479570)
+s <- cast_shade(z, ex, azimuth = 300, elevation = 15)
 mean(s)
+if (requireNamespace("ximage", quietly = TRUE)) {
+  ximage::ximage(z, extent = ex, col = grey.colors(64), asp = 1)
+  ximage::ximage(s * 1, extent = ex, add = TRUE, col = c(NA, adjustcolor("navy", 0.5)))
+}
 }
