@@ -95,6 +95,10 @@ ximage(v$visible, extent = v$extent, add = TRUE,
 points(lookout[1], lookout[2], pch = 21, bg = "orangered", cex = 1.4)
 ```
 
+The smooth surface to the north-east is the sea. The filled REMA used here has heights there, and from a hill
+on the coast you can see a long way across it, so much of the gold is open water. On land, the visible ground
+breaks up along the ridges and fjords of the hills.
+
 The skyline from the lookout comes out of the same calculation:
 
 ```{r skyline, fig.height = 3.5}
@@ -159,8 +163,9 @@ ximage(h, extent = attr(h, "extent"), col = hcl.colors(64, "Inferno"), asp = 1, 
 
 ## Notes
 
-- REMA is a surface model of snow, ice and rock. Over open water it has no data. For the line of sight and the
-  shadows that counts as 0 m, so water doesn't block anything, and it stays missing in the results.
+- REMA is a surface model of snow, ice and rock. Where it has no data, the line of sight and the shadows count
+  it as 0 m, so it blocks nothing, and it stays missing in the results. The filled version read here has
+  heights over much of the sea, so there the sea is treated as a surface.
 - The 20 m and 2 m grids here are resampled from REMA's 32 m and 2 m levels by GDAL's warper with bilinear
   resampling.
 - The browser explorer for the same data source, with hillshade, profiles and per-level drill-down, is at
