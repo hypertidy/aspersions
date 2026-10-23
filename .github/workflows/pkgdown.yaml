@@ -55,9 +55,11 @@ jobs:
               quit(status = 1)
             })
 
-      - name: Deploy to GitHub Pages
+      - name: Prepare to deploy (rsync, git ownership)
         if: github.event_name != 'pull_request'
-        run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+        run: |
+          command -v rsync || (apt-get update -qq && apt-get install -y -qq rsync)
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
       - uses: JamesIves/github-pages-deploy-action@v4
         if: github.event_name != 'pull_request'
