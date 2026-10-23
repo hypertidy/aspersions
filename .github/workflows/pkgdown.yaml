@@ -59,7 +59,7 @@ jobs:
         if: github.event_name != 'pull_request'
         run: |
           command -v rsync || (apt-get update -qq && apt-get install -y -qq rsync)
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          git config --global --add safe.directory '*'
 
       - uses: JamesIves/github-pages-deploy-action@v4
         if: github.event_name != 'pull_request'
