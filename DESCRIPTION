@@ -1,0 +1,23 @@
+Package: aspersions
+Title: Cast Shade and Sight Lines on Terrain
+Version: 0.0.1
+Authors@R: 
+    person("Michael", "Sumner", , "mdsumner@gmail.com", role = c("aut", "cre"))
+Description: Viewsheds and cast shadows for terrain. Viewsheds are exact,
+    computed as an object-space visibility map on the terrain as triangles:
+    the visible part of every triangle seen from a point, as polygons, with
+    the skyline from that point as a by-product. Cast shadows for a sun
+    position use one directional sweep over the grid, with an optional
+    coarse far field for distant ridges and earth curvature. Implemented in
+    Rust (the 'osvm' crate, vendored) via 'extendr'.
+License: MIT + file LICENSE
+URL: https://github.com/hypertidy/aspersions
+BugReports: https://github.com/hypertidy/aspersions/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+SystemRequirements: Cargo (Rust's package manager), rustc
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Config/rextendr/version: 0.4.0

@@ -1,0 +1,19 @@
+TARGET_DIR = ./rust/target
+LIBDIR = $(TARGET_DIR)/release
+STATLIB = $(LIBDIR)/libaspersions.a
+PKG_LIBS = -L$(LIBDIR) -laspersions
+
+all: $(SHLIB) rust_clean
+
+.PHONY: $(STATLIB)
+
+$(SHLIB): $(STATLIB)
+
+$(STATLIB):
+	PATH="$(PATH):$(HOME)/.cargo/bin" cargo build --lib --release --manifest-path=./rust/Cargo.toml --target-dir $(TARGET_DIR)
+
+rust_clean: $(SHLIB)
+	rm -Rf $(LIBDIR)/build
+
+clean:
+	rm -Rf $(SHLIB) $(STATLIB) $(OBJECTS) $(TARGET_DIR)

@@ -1,0 +1,36 @@
+# Rscript data-raw/figures.R : the README figures, into man/figures/
+library(aspersions)
+z <- t(volcano)[ncol(volcano):1, ]; ex <- c(0, 870, 0, 610)
+xs <- seq(5, 865, by = 10); ys <- seq(5, 605, by = 10)
+show <- function(m, col, ...) image(xs, ys, t(m[nrow(m):1, ]), col = col, asp = 1, axes = FALSE, xlab = "", ylab = "", ...)
+grey <- grey.colors(64, 0.25, 0.95)
+eye <- c(300, 200)
+
+png("man/figures/viewshed.png", width = 1400, height = 560, res = 140)
+par(mfrow = c(1, 2), mar = c(1, 1, 2.5, 1))
+v <- viewshed(z, ex, eye, eye = 1.5)
+show(z, grey, main = "Visible from 1.5 m (yellow); some pieces outlined")
+image(xs, ys, t(v$visible[nrow(z):1, ]), col = c(NA, adjustcolor("gold", 0.25), adjustcolor("gold", 0.6), adjustcolor("gold", 0.8), "gold"),
+      breaks = c(-0.01, 0.01, 0.26, 0.51, 0.76, 1.01), add = TRUE)
+pc <- v$pieces[v$pieces$x > 380 & v$pieces$x < 520 & v$pieces$y > 60 & v$pieces$y < 160, ]
+for (p in split(pc, pc$piece)) polygon(p$x, p$y, border = adjustcolor("black", 0.35), lwd = 0.5); rect(380, 60, 520, 160, lty = 3)
+points(eye[1], eye[2], pch = 21, bg = "orangered", cex = 1.6)
+v30 <- viewshed(z, ex, eye, eye = 30, pieces = FALSE)
+par(mar = c(4, 4, 2.5, 1))
+plot(v$skyline, type = "n", xlab = "azimuth (degrees from grid north)", ylab = "horizon elevation (degrees)",
+     main = "Skyline from the same spot", xaxt = "n", ylim = range(c(v$skyline$elevation, v30$skyline$elevation)))
+axis(1, at = seq(0, 360, by = 90), labels = c("N", "E", "S", "W", "N"))
+polygon(c(0, v$skyline$azimuth, 359), c(-90, v$skyline$elevation, -90), col = "darkolivegreen3", border = "darkolivegreen")
+lines(v30$skyline, lty = 2)
+legend("topright", c("eye 1.5 m", "eye 30 m"), fill = c("darkolivegreen3", NA), border = c("darkolivegreen", NA), lty = c(NA, 2), bty = "n")
+dev.off()
+
+png("man/figures/shade.png", width = 1400, height = 560, res = 140)
+par(mfrow = c(1, 2), mar = c(1, 1, 2.5, 1))
+s <- cast_shade(z, ex, azimuth = 300, elevation = 12)
+show(z, grey, main = "Cast shade, sun from 300 degrees at 12 degrees")
+image(xs, ys, t(s[nrow(z):1, ] * 1), col = c(NA, adjustcolor("midnightblue", 0.6)), add = TRUE)
+h <- sun_hours(z, ex, "2026-06-21", lon = 174.77, lat = -36.88, tz = "Pacific/Auckland", step = 5)
+show(h, hcl.colors(64, "Inferno"), main = sprintf("Hours of direct sun, 21 June (of %.1f h daylight)", attr(h, "daylight")))
+dev.off()
+cat("ok\n")

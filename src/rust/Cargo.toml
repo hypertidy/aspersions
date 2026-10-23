@@ -1,0 +1,19 @@
+[package]
+name = "aspersions"
+version = "0.0.1"
+edition = "2021"
+publish = false
+
+[lib]
+crate-type = ["staticlib"]
+name = "aspersions"
+
+[dependencies]
+extendr-api = "0.9"
+osvm = { path = "osvm" }
+
+[profile.release]
+opt-level = 3
+strip = true
+lto = true
+codegen-units = 1
