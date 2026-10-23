@@ -145,6 +145,10 @@ the eye at 2 m.</p>
 <span>       col <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"transparent"</span>, <span class="fu"><a href="https://rdrr.io/r/grDevices/adjustcolor.html" class="external-link">adjustcolor</a></span><span class="op">(</span><span class="st">"gold"</span>, <span class="fl">0.7</span><span class="op">)</span><span class="op">)</span>, breaks <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">0.01</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/points.html" class="external-link">points</a></span><span class="op">(</span><span class="va">lookout</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">lookout</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, pch <span class="op">=</span> <span class="fl">21</span>, bg <span class="op">=</span> <span class="st">"orangered"</span>, cex <span class="op">=</span> <span class="fl">1.4</span><span class="op">)</span></span></code></pre></div>
 <p><img src="vestfold-hills_files/figure-html/lookout-1.png" class="r-plt" alt="" width="100%"></p>
+<p>The smooth surface to the north-east is the sea. The filled REMA used
+here has heights there, and from a hill on the coast you can see a long
+way across it, so much of the gold is open water. On land, the visible
+ground breaks up along the ridges and fjords of the hills.</p>
 <p>The skyline from the lookout comes out of the same calculation:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/graphics/par.html" class="external-link">par</a></span><span class="op">(</span>mar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">4</span>, <span class="fl">4</span>, <span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
@@ -222,10 +226,11 @@ of them away, most in the valleys and on the slopes facing the pole:</p>
 <h2 id="notes">Notes<a class="anchor" aria-label="anchor" href="#notes"></a>
 </h2>
 <ul>
-<li>REMA is a surface model of snow, ice and rock. Over open water it
-has no data. For the line of sight and the shadows that counts as 0 m,
-so water doesn’t block anything, and it stays missing in the
-results.</li>
+<li>REMA is a surface model of snow, ice and rock. Where it has no data,
+the line of sight and the shadows count it as 0 m, so it blocks nothing,
+and it stays missing in the results. The filled version read here has
+heights over much of the sea, so there the sea is treated as a
+surface.</li>
 <li>The 20 m and 2 m grids here are resampled from REMA’s 32 m and 2 m
 levels by GDAL’s warper with bilinear resampling.</li>
 <li>The browser explorer for the same data source, with hillshade,
