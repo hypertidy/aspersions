@@ -22,6 +22,8 @@ jobs:
       contents: write
     env:
       GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+      AWS_NO_SIGN_REQUEST: "YES"
+      AWS_REGION: us-west-2
     steps:
       - uses: actions/checkout@v4
 
@@ -35,17 +37,6 @@ jobs:
             if (!requireNamespace(p, quietly = TRUE)) install.packages(p, repos = repos)
           }
           if (!requireNamespace("ximage", quietly = TRUE)) remotes::install_github("hypertidy/ximage")
-
-      - name: Check the REMA source (diagnostic)
-        continue-on-error: true
-        run: |
-          DSN=/vsicurl/https://raw.githubusercontent.com/mdsumner/rema-ovr/main/REMA-2m_dem_ovr.vrt
-          export GDAL_DISABLE_READDIR_ON_OPEN=EMPTY_DIR
-          gdalinfo --version | sed 's/^/::notice::/'
-          gdalinfo "$DSN" 2>&1 | grep -iE "size is|overview|error" | head -5 | sed 's/^/::notice::/'
-          gdalwarp -overwrite -t_srs EPSG:3031 -te 2289000 462000 2330000 503000 -tr 20 20 -r bilinear "$DSN" /tmp/vh.tif 2>&1 \
-            | grep -iE "error|warning" | head -8 | sed 's/^/::warning::/'
-          gdalinfo -stats /tmp/vh.tif 2>&1 | grep -iE "size is|minimum|error" | head -3 | sed 's/^/::notice::/'
 
       - name: Install aspersions
         run: R CMD INSTALL .

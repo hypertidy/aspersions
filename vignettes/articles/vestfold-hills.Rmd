@@ -13,6 +13,9 @@ library(ximage)
 dsn <- Sys.getenv("ASPERSIONS_REMA_DSN",
                   "/vsicurl/https://raw.githubusercontent.com/mdsumner/rema-ovr/main/REMA-2m_dem_ovr.vrt")
 set_config_option("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR")
+## the 2 m, 10 m and 32 m levels are in a public S3 bucket: read it anonymously
+set_config_option("AWS_NO_SIGN_REQUEST", "YES")
+set_config_option("AWS_REGION", "us-west-2")
 ok <- tryCatch({ ds <- new(GDALRaster, dsn); ds$close(); TRUE }, error = function(e) FALSE)
 knitr::opts_chunk$set(eval = ok)
 ```
@@ -36,6 +39,8 @@ same source drives a browser explorer, <https://mdsumner.github.io/rema-ovr/>.
 
 ```{r read}
 dsn
+## the full-resolution levels live in a public bucket, read without credentials
+set_config_option("AWS_NO_SIGN_REQUEST", "YES")
 
 ## warp a box of REMA in Antarctic polar stereographic (EPSG:3031) at `res` metres
 read_rema <- function(extent, res) {

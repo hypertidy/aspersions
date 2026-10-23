@@ -85,6 +85,7 @@ true north is the longitude: see the Vestfold Hills article.
 ``` r
 library(gdalraster)
 dsn <- "/vsicurl/https://raw.githubusercontent.com/mdsumner/rema-ovr/main/REMA-2m_dem_ovr.vrt"
+set_config_option("AWS_NO_SIGN_REQUEST", "YES")   # finer levels are in a public S3 bucket
 tf <- tempfile(fileext = ".tif")
 warp(dsn, tf, t_srs = "EPSG:3031",
      cl_arg = c("-te", 2289000, 462000, 2330000, 503000, "-tr", 20, 20, "-r", "bilinear"))
